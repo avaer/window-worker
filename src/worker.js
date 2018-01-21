@@ -56,7 +56,7 @@ process.once('message', obj => {
         }).code;
     }
 
-    const exp = '(async function() {' + compile(obj.isfn ? ('(' + obj.input + ')()') : await getScript(obj.input)) + '})()';
+    const exp = '(async function() {' + compile(obj.isfn ? ('(' + obj.input + ')()') : await getScript(_normalizeUrl(obj.input))) + '})()';
 
     global.self = {
       close: () => {
