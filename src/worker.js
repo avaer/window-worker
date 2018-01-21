@@ -22,7 +22,7 @@ process.once('message', obj => {
     messageQueue.length = 0;
   };
 
-  (async () => {
+  (async function() {
     const baseUrl = obj.baseUrl;
     const _normalizeUrl = url => {
       if (!/^.+?:/.test(url)) {
