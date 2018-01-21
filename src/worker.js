@@ -2,7 +2,7 @@ const fs = require('fs'),
 	path = require('path'),
 	vm = require('vm'),
 	noop = require(path.join(__dirname, 'noop.js')),
-	events = /^(error|message)$/;
+	events = /^(?:error|message)$/;
 const fetch = require('window-fetch');
 
 process.once('message', obj => {
