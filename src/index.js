@@ -6,12 +6,11 @@ const path = require("path"),
 let range = {min: 1, max: 300};
 
 class Worker {
-	constructor (arg, args = [], options = {cwd: process.cwd()}) {
+	constructor (arg, options = {}) {
 		let isfn = typeof arg === "function",
 			input = isfn ? arg.toString() : arg;
 
-		options.cwd = options.cwd || process.cwd();
-		options.baseUrl = options.baseUrl || 'http://127.0.0.1/';
+    const {args = [], cwd = process.cwd(), baseUrl = 'http://127.0.0.1/'} = options;
 
 		//get all debug related parameters
 		var debugVars = process.execArgv.filter(execArg => {
@@ -81,8 +80,8 @@ class Worker {
 		this.child.send({
       input,
       isfn,
-      cwd: options.cwd,
-      baseUrl: options.baseUrl,
+      cwd,
+      baseUrl,
     });
 	}
 
