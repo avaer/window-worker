@@ -34,9 +34,12 @@ process.once('message', obj => {
     async function importScripts() {
       for (let i = 0; i < arguments.length; i++) {
         const scriptSrc = arguments[i];
-        const codeString = await getScript(_normalizeUrl(scriptSrc));
+        const filename = _normalizeUrl(scriptSrc);
+        const codeString = await getScript(filename);
         const compiledCodeString = compile(codeString);
-        vm.createScript(compiledCodeString).runInThisContext();
+        await new vm.Script(compiledCodeString, {
+          filename: /^https?:/.test(filename) ? filename : 'data-url://',
+        }).runInThisContext();
       }
     }
     function getScript(s) {
@@ -58,7 +61,8 @@ process.once('message', obj => {
         '})()';
     }
 
-    const exp = compile(await getScript(_normalizeUrl(obj.input)));
+    const filename = _normalizeUrl(obj.input);
+    const exp = compile(await getScript(filename));
 
     global.self = {
       close: () => {
@@ -90,7 +94,9 @@ process.once('message', obj => {
       global[key] = global.self[key];
     });
 
-    await vm.createScript(exp).runInThisContext();
+    await new vm.Script(exp, {
+      filename: /^https?:/.test(filename) ? filename : 'data-url://',
+    }).runInThisContext();
 
     process.on('message', msg => {
       try {
