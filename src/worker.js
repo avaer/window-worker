@@ -59,35 +59,24 @@ process.once('message', obj => {
     const filename = _normalizeUrl(obj.input);
     const exp = compile(await getScript(filename));
 
-    global.self = {
-      close: () => {
-        process.exit(0);
-      },
-      postMessage: msg => {
-        process.send(JSON.stringify({data: msg}, null, 0));
-      },
-      onmessage: void 0,
-      onerror: err => {
-        process.send(JSON.stringify({error: err.message, stack: err.stack}, null, 0));
-      },
-      addEventListener: (event, fn) => {
-        if (events.test(event)) {
-          global["on" + event] = global.self["on" + event] = fn;
-        }
+    global.self = global;
+    global.close = () => {
+      process.exit(0);
+    };
+    global.postMessage = msg => {
+      process.send(JSON.stringify({data: msg}, null, 0));
+    };
+    global.onmessage = void 0;
+    global.onerror = err => {
+      process.send(JSON.stringify({error: err.message, stack: err.stack}, null, 0));
+    };
+    global.addEventListener = (event, fn) => {
+      if (events.test(event)) {
+        global['on' + event] = fn;
       }
     };
-
-    global.__dirname = obj.cwd;
-    global.__filename = __filename;
-    // global.require = require;
-
     global.fetch = (s, options) => fetch(_normalizeUrl(s), options);
-
     global.importScripts = importScripts;
-
-    Object.keys(global.self).forEach(key => {
-      global[key] = global.self[key];
-    });
 
     await new vm.Script(exp, {
       filename: /^https?:/.test(filename) ? filename : 'data-url://',
@@ -95,13 +84,13 @@ process.once('message', obj => {
 
     process.on('message', msg => {
       try {
-        (global.onmessage || global.self.onmessage || noop)(JSON.parse(msg));
+        (global.onmessage || noop)(JSON.parse(msg));
       } catch (err) {
-        (global.onerror || global.self.onerror || noop)(err);
+        (global.onerror || noop)(err);
       }
     });
     process.on('error', err => {
-      (global.onerror || global.self.onerror || noop)(err);
+      (global.onerror || noop)(err);
     });
     bindMessageQueue();
   })()
