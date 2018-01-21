@@ -106,5 +106,9 @@ process.once('message', obj => {
       (global.onerror || global.self.onerror || noop)(err);
     });
     bindMessageQueue();
-  })();
+  })()
+    .catch(err => {
+      console.warn(err.stack);
+      process.exit(1);
+    });
 });
