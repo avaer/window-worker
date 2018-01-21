@@ -85,11 +85,6 @@ process.once('message', obj => {
     global.fetch = (s, options) => fetch(_normalizeUrl(s), options);
 
     global.importScripts = importScripts;
-    /* global.importScripts = (...files) => {
-      if (files.length > 0) {
-        vm.createScript(files.map(file => fs.readFileSync(file, "utf8")).join("\n")).runInThisContext();
-      }
-    }; */
 
     Object.keys(global.self).forEach(key => {
       global[key] = global.self[key];
