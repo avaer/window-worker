@@ -1,11 +1,8 @@
 {
-  "name": "tiny-worker",
-  "version": "2.1.1",
-  "description": "Tiny WebWorker for Server",
+  "name": "window-worker",
+  "version": "0.0.1",
+  "description": "Web Worker for node using async http fetch",
   "main": "lib/index.js",
-  "scripts": {
-    "test": "grunt test"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/avoidwork/tiny-worker.git"
@@ -13,24 +10,17 @@
   "keywords": [
     "web",
     "worker",
-    "ps",
-    "webworker"
+    "webworker",
+    "async",
+    "await",
+    "fetch"
   ],
-  "author": "Jason Mulligan <jason.mulligan@avoidwork.com>",
+  "author": "Avaer Kazmer <a@modules.io>",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/avoidwork/tiny-worker/issues"
+    "url": "https://github.com/modulesio/window-worker/issues"
   },
-  "homepage": "https://github.com/avoidwork/tiny-worker",
-  "devDependencies": {
-    "babel-preset-es2015": "~6.22.0",
-    "grunt": "~1.0.1",
-    "grunt-babel": "~6.0.0",
-    "grunt-cli": "~1.2.0",
-    "grunt-contrib-nodeunit": "~1.0.0",
-    "grunt-contrib-watch": "~1.0.0",
-    "grunt-eslint": "~19.0.0"
-  },
+  "homepage": "https://github.com/modulesio/window-worker",
   "dependencies": {
     "babel-core": "^6.26.0",
     "babel-plugin-transform-import-scripts-async": "0.0.1",
