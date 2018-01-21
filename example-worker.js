@@ -1,5 +1,5 @@
 console.log('run worker 1');
 
-importScripts('window-worker/example.js');
+importScripts('example-import.js');
 
 console.log('run worker 2');
