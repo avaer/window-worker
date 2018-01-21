@@ -6,10 +6,7 @@ const path = require("path"),
 let range = {min: 1, max: 300};
 
 class Worker {
-	constructor (arg, options = {}) {
-		let isfn = typeof arg === "function",
-			input = isfn ? arg.toString() : arg;
-
+	constructor (input, options = {}) {
     const {args = [], cwd = process.cwd(), baseUrl = 'http://127.0.0.1/'} = options;
 
 		//get all debug related parameters
@@ -79,7 +76,6 @@ class Worker {
 
 		this.child.send({
       input,
-      isfn,
       cwd,
       baseUrl,
     });

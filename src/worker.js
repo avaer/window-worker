@@ -58,7 +58,7 @@ process.once('message', obj => {
         '})()';
     }
 
-    const exp = compile(obj.isfn ? ('(' + obj.input + ')()') : await getScript(_normalizeUrl(obj.input)));
+    const exp = compile(await getScript(_normalizeUrl(obj.input)));
 
     global.self = {
       close: () => {
