@@ -7,32 +7,6 @@ const fetch = require('window-fetch');
 const babel = require('babel-core');
 const importScriptsAsync = require('babel-plugin-transform-import-scripts-async');
 
-async function importScripts() {
-  for (let i = 0; i < arguments.length; i++) {
-    const scriptSrc = arguments[i];
-    const codeString = await getScript(scriptSrc);
-    const compiledCodeString = compile(codeString);
-    vm.createScript(compiledCodeString).runInThisContext();
-  }
-}
-function getScript(s) {
-  return fetch(s)
-    .then(res => {
-      if (res.status >= 200 && res.status < 300) {
-        return res.text();
-      } else {
-        return Promise.reject(new Error('fetch returned invalid status code: ' + res.status));
-      }
-    });
-}
-function compile(arg) {
-  return babel
-    .transform(arg, {
-      plugins: [importScriptsAsync],
-    }).code;
-}
-
-// Bootstraps the Worker
 process.once('message', obj => {
   const messageQueue = [];
   const onmessage = m => {
@@ -49,6 +23,39 @@ process.once('message', obj => {
   };
 
   (async () => {
+    const baseUrl = obj.baseUrl;
+    const _normalizeUrl = url => {
+      if (!/^.+?:/.test(url)) {
+        url = baseUrl + ((!/\/$/.test(baseUrl) && !/^\//.test(url)) ? '/' : '') + url;
+      }
+      return url;
+    };
+
+    async function importScripts() {
+      for (let i = 0; i < arguments.length; i++) {
+        const scriptSrc = arguments[i];
+        const codeString = await getScript(_normalizeUrl(scriptSrc));
+        const compiledCodeString = compile(codeString);
+        vm.createScript(compiledCodeString).runInThisContext();
+      }
+    }
+    function getScript(s) {
+      return fetch(s)
+        .then(res => {
+          if (res.status >= 200 && res.status < 300) {
+            return res.text();
+          } else {
+            return Promise.reject(new Error('fetch returned invalid status code: ' + res.status));
+          }
+        });
+    }
+    function compile(arg) {
+      return babel
+        .transform(arg, {
+          plugins: [importScriptsAsync],
+        }).code;
+    }
+
     const exp = '(async function() {' + compile(obj.isfn ? ('(' + obj.input + ')()') : await getScript(obj.input)) + '})()';
 
     global.self = {
@@ -73,13 +80,6 @@ process.once('message', obj => {
     global.__filename = __filename;
     // global.require = require;
 
-    const baseUrl = obj.baseUrl;
-    const _normalizeUrl = url => {
-      if (!/^.+?:/.test(url)) {
-        url = baseUrl + ((!/\/$/.test(baseUrl) && !/^\//.test(url)) ? '/' : '') + url;
-      }
-      return url;
-    };
     global.fetch = (s, options) => fetch(_normalizeUrl(s), options);
 
     global.importScripts = importScripts;

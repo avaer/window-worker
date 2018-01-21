@@ -82,6 +82,7 @@ class Worker {
       input,
       isfn,
       cwd: options.cwd,
+      baseUrl: options.baseUrl,
     });
 	}
 
