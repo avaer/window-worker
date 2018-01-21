@@ -45,7 +45,7 @@ process.once('message', obj => {
           if (res.status >= 200 && res.status < 300) {
             return res.text();
           } else {
-            return Promise.reject(new Error('fetch returned invalid status code: ' + res.status));
+            return Promise.reject(new Error('fetch returned invalid status code: ' + JSON.stringify(s) + ' : ' + res.status));
           }
         });
     }
