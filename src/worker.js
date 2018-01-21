@@ -22,7 +22,7 @@ process.once('message', obj => {
     messageQueue.length = 0;
   };
 
-  (async function() {
+  (async () => {
     const baseUrl = obj.baseUrl;
     const _normalizeUrl = url => {
       if (!/^.+?:/.test(url)) {
@@ -31,7 +31,7 @@ process.once('message', obj => {
       return url;
     };
 
-    async function importScripts() {
+    const importScripts = async () => {
       for (let i = 0; i < arguments.length; i++) {
         const scriptSrc = arguments[i];
         const filename = _normalizeUrl(scriptSrc);
@@ -41,7 +41,7 @@ process.once('message', obj => {
           filename: /^https?:/.test(filename) ? filename : 'data-url://',
         }).runInThisContext();
       }
-    }
+    };
     function getScript(s) {
       return fetch(s)
         .then(res => {
@@ -53,7 +53,7 @@ process.once('message', obj => {
         });
     }
     function compile(arg) {
-      return '(async function() {' +
+      return '(async () => {' +
         babel
           .transform(arg, {
             plugins: [importScriptsAsync],
