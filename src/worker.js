@@ -4,8 +4,6 @@ const fs = require('fs'),
 	noop = require(path.join(__dirname, 'noop.js')),
 	events = /^(error|message)$/;
 const fetch = require('window-fetch');
-const babel = require('babel-core');
-const importScriptsAsync = require('babel-plugin-transform-import-scripts-async');
 
 process.once('message', obj => {
   const messageQueue = [];
@@ -54,11 +52,8 @@ process.once('message', obj => {
     }
     function compile(arg) {
       return '(async () => {' +
-        babel
-          .transform(arg, {
-            plugins: [importScriptsAsync],
-          }).code +
-        '})()';
+        arg.replace(/^importScripts\(/gm, 'await importScripts(') +
+      '})()';
     }
 
     const filename = _normalizeUrl(obj.input);

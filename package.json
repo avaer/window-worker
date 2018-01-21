@@ -22,8 +22,6 @@
   },
   "homepage": "https://github.com/modulesio/window-worker",
   "dependencies": {
-    "babel-core": "^6.26.0",
-    "babel-plugin-transform-import-scripts-async": "0.0.1",
     "window-fetch": "0.0.2"
   }
 }
