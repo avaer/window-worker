@@ -31,7 +31,7 @@ process.once('message', obj => {
       return url;
     };
 
-    const importScripts = async () => {
+    async function importScripts() {
       for (let i = 0; i < arguments.length; i++) {
         const scriptSrc = arguments[i];
         const filename = _normalizeUrl(scriptSrc);
@@ -41,7 +41,7 @@ process.once('message', obj => {
           filename: /^https?:/.test(filename) ? filename : 'data-url://',
         }).runInThisContext();
       }
-    };
+    }
     function getScript(s) {
       return fetch(s)
         .then(res => {
