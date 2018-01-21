@@ -50,13 +50,15 @@ process.once('message', obj => {
         });
     }
     function compile(arg) {
-      return babel
-        .transform(arg, {
-          plugins: [importScriptsAsync],
-        }).code;
+      return '(async function() {' +
+        babel
+          .transform(arg, {
+            plugins: [importScriptsAsync],
+          }).code +
+        '})()';
     }
 
-    const exp = '(async function() {' + compile(obj.isfn ? ('(' + obj.input + ')()') : await getScript(_normalizeUrl(obj.input))) + '})()';
+    const exp = compile(obj.isfn ? ('(' + obj.input + ')()') : await getScript(_normalizeUrl(obj.input)));
 
     global.self = {
       close: () => {
