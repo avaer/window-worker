@@ -10,9 +10,8 @@ class Worker {
 		let isfn = typeof arg === "function",
 			input = isfn ? arg.toString() : arg;
 
-		if (!options.cwd) {
-			options.cwd = process.cwd();
-		}
+		options.cwd = options.cwd || process.cwd();
+		options.baseUrl = options.baseUrl || 'http://127.0.0.1/';
 
 		//get all debug related parameters
 		var debugVars = process.execArgv.filter(execArg => {
@@ -79,7 +78,11 @@ class Worker {
 			}
 		});
 
-		this.child.send({input: input, isfn: isfn, cwd: options.cwd});
+		this.child.send({
+      input,
+      isfn,
+      cwd: options.cwd,
+    });
 	}
 
 	static setRange (min, max) {
