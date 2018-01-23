@@ -1,7 +1,6 @@
 const fs = require('fs'),
 	path = require('path'),
 	vm = require('vm'),
-	noop = require(path.join(__dirname, 'noop.js')),
 	events = /^(?:error|message)$/;
 const fetch = require('window-fetch');
 
@@ -29,17 +28,6 @@ process.once('message', obj => {
       return url;
     };
 
-    async function importScripts() {
-      for (let i = 0; i < arguments.length; i++) {
-        const scriptSrc = arguments[i];
-        const filename = _normalizeUrl(scriptSrc);
-        const codeString = await getScript(filename);
-        const compiledCodeString = compile(codeString);
-        await new vm.Script(compiledCodeString, {
-          filename: /^https?:/.test(filename) ? filename : 'data-url://',
-        }).runInThisContext();
-      }
-    }
     function getScript(s) {
       return fetch(s)
         .then(res => {
@@ -50,14 +38,41 @@ process.once('message', obj => {
           }
         });
     }
-    function compile(arg) {
-      return '(async () => {' +
-        arg.replace(/^importScripts\(/gm, 'await importScripts(') +
-      '})()';
-    }
 
     const filename = _normalizeUrl(obj.input);
-    const exp = compile(await getScript(filename));
+    const exp = await getScript(filename);
+    const importScriptPaths = (() => {
+      const result = [];
+      const regexp = /^importScripts\s*\((?:'(.+)'|"(.+)"|`(.+)`)\).*$/gm;
+      let match;
+      while (match = regexp.exec(exp)) {
+        result.push(match[1] || match[2] || match[3]);
+      }
+      return result;
+    })();
+    const importScriptSources = {};
+    await Promise.all(importScriptPaths.map(importScriptPath => {
+      return getScript(_normalizeUrl(importScriptPath))
+        .then(importScriptSource => {
+          importScriptSources[importScriptPath] = importScriptSource;
+        });
+    }));
+
+    function importScripts() {
+      for (let i = 0; i < arguments.length; i++) {
+        const importScriptPath = arguments[i];
+        const importScriptSource = importScriptSources[importScriptPath];
+
+        if (importScriptSource !== undefined) {
+          const filename = _normalizeUrl(importScriptPath);
+          vm.runInThisContext(importScriptSource, {
+            filename: /^https?:/.test(filename) ? filename : 'data-url://',
+          });
+        } else {
+          throw new Error('importScripts: script not found: ' + JSON.stringify(importScriptPath) + ', ' + JSON.stringify(Object.keys(importScriptSources)));
+        }
+      }
+    }
 
     global.self = global;
     global.close = () => {
@@ -78,19 +93,19 @@ process.once('message', obj => {
     global.fetch = (s, options) => fetch(_normalizeUrl(s), options);
     global.importScripts = importScripts;
 
-    await new vm.Script(exp, {
+    vm.runInThisContext(exp, {
       filename: /^https?:/.test(filename) ? filename : 'data-url://',
-    }).runInThisContext();
+    });
 
     process.on('message', msg => {
       try {
-        (global.onmessage || noop)(JSON.parse(msg));
+        global.onmessage && global.onmessage(JSON.parse(msg));
       } catch (err) {
-        (global.onerror || noop)(err);
+        global.onerror && global.onerror(err);
       }
     });
     process.on('error', err => {
-      (global.onerror || noop)(err);
+      global.onerror && global.onerror(err);
     });
     bindMessageQueue();
   })()
