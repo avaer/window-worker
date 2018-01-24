@@ -11,7 +11,7 @@ const ws = fs.createWriteStream(null, {fd: 4});
 
 process.once('message', obj => {
   (async () => {
-    const baseUrl = options.url.replace(/\/+$/, '');
+    const baseUrl = obj.baseUrl.replace(/\/+$/, '');
     const _normalizeUrl = url => {
       if (!/^.+?:/.test(url)) {
         url = baseUrl + (!/^\//.test(url) ? '/' : '') + url;
