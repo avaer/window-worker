@@ -23,7 +23,7 @@
   "homepage": "https://github.com/modulesio/window-worker",
   "dependencies": {
     "pullstream": "^1.0.0",
-    "smiggles": "0.0.6",
+    "smiggles": "0.0.7",
     "window-fetch": "0.0.2"
   }
 }
