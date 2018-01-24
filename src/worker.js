@@ -11,10 +11,10 @@ const ws = fs.createWriteStream(null, {fd: 4});
 
 process.once('message', obj => {
   (async () => {
-    const baseUrl = obj.baseUrl;
+    const baseUrl = options.url.replace(/\/+$/, '');
     const _normalizeUrl = url => {
       if (!/^.+?:/.test(url)) {
-        url = baseUrl + ((!/\/$/.test(baseUrl) && !/^\//.test(url)) ? '/' : '') + url;
+        url = baseUrl + (!/^\//.test(url) ? '/' : '') + url;
       }
       return url;
     };
