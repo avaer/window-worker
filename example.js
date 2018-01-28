@@ -2,7 +2,7 @@ const fs = require('fs');
 const Worker = require('.');
 
 const worker = new Worker('data:application/javascript;base64,' + fs.readFileSync('example-worker.js', 'base64'), {
-  baseUrl: 'https://unpkg.com/window-worker'
+  baseUrl: 'https://unpkg.com/window-worker/'
 });
 let numMessages = 0;
 worker.onmessage = msg => {
