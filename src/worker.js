@@ -1,7 +1,8 @@
-const fs = require('fs'),
-	path = require('path'),
-	vm = require('vm'),
-	events = /^(?:error|message)$/;
+const path = require('path');
+const fs = require('fs');
+const url = require('url');
+const {URL} = url;
+const vm = require('vm');
 const fetch = require('window-fetch');
 const smiggles = require('smiggles');
 const pullstream = require('pullstream');
@@ -86,7 +87,7 @@ process.once('message', obj => {
       process.send(JSON.stringify({error: err.message, stack: err.stack}));
     };
     global.addEventListener = (event, fn) => {
-      if (events.test(event)) {
+      if (/^(?:error|message)$/.test(event)) {
         global['on' + event] = fn;
       }
     };
