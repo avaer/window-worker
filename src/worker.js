@@ -15,7 +15,6 @@ const ws = fs.createWriteStream(null, {fd: 4});
 process.once('message', obj => {
   (async () => {
     const _normalizeUrl = src => new URL(src, obj.baseUrl).href;
-
     function getScript(s) {
       return fetch(s)
         .then(res => {
@@ -92,6 +91,12 @@ process.once('message', obj => {
     global.XMLHttpRequest = XMLHttpRequest;
     global.WebSocket = WebSocket;
     global.importScripts = importScripts;
+    if (obj.bindingsModule) {
+      const bindings = require(obj.bindingsModule);
+      for (const k in bindings) {
+        global[k] = bindings[k];
+      }
+    }
 
     vm.runInThisContext(exp, {
       filename: /^https?:/.test(filename) ? filename : 'data-url://',

@@ -11,7 +11,7 @@ const range = {min: 1, max: 300};
 
 class Worker {
 	constructor (input, options = {}) {
-    const {args = [], cwd = process.cwd(), baseUrl = 'http://127.0.0.1/'} = options;
+    const {args = [], cwd = process.cwd(), baseUrl = 'http://127.0.0.1/', bindingsModule = null} = options;
 
 		// get all debug related parameters
 		var debugVars = process.execArgv.filter(execArg => {
@@ -110,6 +110,7 @@ class Worker {
       input,
       cwd,
       baseUrl,
+      bindingsModule,
     });
 	}
 

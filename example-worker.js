@@ -1,6 +1,9 @@
 console.log('run worker 1');
 
 importScripts('example-import.js');
+if (!nativeBinding.bound) {
+  throw new Error('native binding not found');
+}
 
 console.log('run worker 2');
 
