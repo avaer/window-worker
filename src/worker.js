@@ -85,6 +85,7 @@ process.once('message', obj => {
         global['on' + event] = fn;
       }
     };
+    global.location = url.parse(filename);
     global.fetch = (s, options) => fetch(_normalizeUrl(s), options);
     global.importScripts = importScripts;
 
