@@ -4,6 +4,8 @@ const url = require('url');
 const {URL} = url;
 const vm = require('vm');
 const fetch = require('window-fetch');
+const {XMLHttpRequest} = require('xmlhttprequest');
+const WebSocket = require('ws/lib/websocket');
 const smiggles = require('smiggles');
 const pullstream = require('pullstream');
 const MessageEvent = require('./message-event');
@@ -87,6 +89,8 @@ process.once('message', obj => {
     };
     global.location = url.parse(filename);
     global.fetch = (s, options) => fetch(_normalizeUrl(s), options);
+    global.XMLHttpRequest = XMLHttpRequest;
+    global.WebSocket = WebSocket;
     global.importScripts = importScripts;
 
     vm.runInThisContext(exp, {
