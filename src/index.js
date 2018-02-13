@@ -138,5 +138,6 @@ class Worker {
 		this.child.kill("SIGINT");
 	}
 }
+Worker.bind = bindings => smiggles.bind(bindings);
 
 module.exports = Worker;
