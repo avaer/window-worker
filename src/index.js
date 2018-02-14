@@ -13,43 +13,6 @@ class Worker {
 	constructor (input, options = {}) {
     const {args = [], cwd = process.cwd(), baseUrl = 'http://127.0.0.1/', bindingsModule = null} = options;
 
-		// get all debug related parameters
-		var debugVars = process.execArgv.filter(execArg => {
-			return (/(debug|inspect)/).test(execArg);
-		});
-		if (debugVars.length > 0 && !options.noDebugRedirection) {
-			if (!options.execArgv) { //if no execArgs are given copy all arguments
-				debugVars = Array.from(process.execArgv);
-				options.execArgv = [];
-			}
-
-			let inspectIndex = debugVars.findIndex(debugArg => { //get index of inspect parameter
-				return (/^--inspect(-brk)?(=\d+)?$/).test(debugArg);
-			});
-
-			let debugIndex = debugVars.findIndex(debugArg => { //get index of debug parameter
-				return (/^--debug(-brk)?(=\d+)?$/).test(debugArg);
-			});
-
-			let portIndex = inspectIndex >= 0 ? inspectIndex : debugIndex; //get index of port, inspect has higher priority
-
-			if (portIndex >= 0) {
-				var match = (/^--(debug|inspect)(?:-brk)?(?:=(\d+))?$/).exec(debugVars[portIndex]); //get port
-				var port = defaultPorts[match[1]];
-				if (match[2]) {
-					port = parseInt(match[2]);
-				}
-				debugVars[portIndex] = "--" + match[1] + "=" + (port + range.min + Math.floor(Math.random() * (range.max - range.min))); //new parameter
-
-				if (debugIndex >= 0 && debugIndex !== portIndex) { //remove "-brk" from debug if there
-					match = (/^(--debug)(?:-brk)?(.*)/).exec(debugVars[debugIndex]);
-					debugVars[debugIndex] = match[1] + (match[2] ? match[2] : "");
-				}
-			}
-			options.execArgv = options.execArgv.concat(debugVars);
-
-		}
-
 		this.child = fork(worker, args, {
       cwd,
       stdio: [0, 1, 2, 'pipe', 'pipe', 'ipc'],
