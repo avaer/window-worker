@@ -20,6 +20,31 @@ class Worker {
 		this.onerror = undefined;
 		this.onmessage = undefined;
 
+    // kill child fork if parent dies. (programming lingo has always
+    // seemed so macabre... slaves and masters, killing children, hm.)
+    {
+      // https://stackoverflow.com/questions/14031763/doing-a-cleanup-action-just-before-node-js-exits
+      function exitHandler(options, err) {
+          this.terminate();
+          if (options.cleanup) console.log('clean');
+          if (err) console.log(err.stack);
+          if (options.exit) process.exit();
+      }
+
+      //do something when app is closing
+      process.on('exit', exitHandler.bind(this,{cleanup:true}));
+
+      //catches ctrl+c event
+      process.on('SIGINT', exitHandler.bind(this, {exit:true}));
+
+      // catches "kill pid" (for example: nodemon restart)
+      process.on('SIGUSR1', exitHandler.bind(this, {exit:true}));
+      process.on('SIGUSR2', exitHandler.bind(this, {exit:true}));
+
+      //catches uncaught exceptions
+      process.on('uncaughtException', exitHandler.bind(this, {exit:true}));
+    }
+
     const rs = this.child.stdio[4];
     const ps = new pullstream();
     rs.pipe(ps);
@@ -104,3 +129,4 @@ class Worker {
 Worker.bind = bindings => smiggles.bind(bindings);
 
 module.exports = Worker;
+
