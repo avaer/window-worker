@@ -6,15 +6,14 @@ const vm = require('vm');
 const fetch = require('window-fetch');
 const {XMLHttpRequest} = require('xmlhttprequest');
 const WebSocket = require('ws/lib/websocket');
-const smiggles = require('smiggles');
-const pullstream = require('pullstream');
+
 const MessageEvent = require('./message-event');
 
-const ws = fs.createWriteStream(null, {fd: 4});
+onmessage = initMessage => {
+  onmessage = null;
 
-process.once('message', obj => {
   (async () => {
-    const _normalizeUrl = src => new URL(src, obj.baseUrl).href;
+    const _normalizeUrl = src => new URL(src, initMessage.baseUrl).href;
     function getScript(s) {
       return fetch(s)
         .then(res => {
@@ -26,8 +25,10 @@ process.once('message', obj => {
         });
     }
 
-    const filename = _normalizeUrl(obj.input);
+    const filename = _normalizeUrl(initMessage.src);
+
     const exp = await getScript(filename);
+
     const importScriptPaths = (() => {
       const result = [];
       const regexp = /^importScripts\s*\((?:'(.+)'|"(.+)"|`(.+)`)\).*$/gm;
@@ -62,22 +63,6 @@ process.once('message', obj => {
     }
 
     global.self = global;
-    global.close = () => {
-      process.exit(0);
-    };
-    global.postMessage = msg => {
-      const b = smiggles.serialize(msg);
-      let bSize = 0;
-      for (let i = 0; i < b.length; i++) {
-        bSize += b[i].length;
-      }
-      const lb = Uint32Array.from([bSize]);
-      ws.write(new Buffer(lb.buffer, lb.byteOffset, lb.byteLength));
-      for (let i = 0; i < b.length; i++) {
-        ws.write(b[i]);
-      }
-    };
-    global.onmessage = undefined;
     global.onerror = err => {
       process.send(JSON.stringify({error: err.message, stack: err.stack}));
     };
@@ -91,8 +76,8 @@ process.once('message', obj => {
     global.XMLHttpRequest = XMLHttpRequest;
     global.WebSocket = WebSocket;
     global.importScripts = importScripts;
-    if (obj.bindingsModule) {
-      const bindings = require(obj.bindingsModule);
+    if (initMessage.bindingsModule) {
+      const bindings = require(initMessage.bindingsModule);
       for (const k in bindings) {
         global[k] = bindings[k];
       }
@@ -101,44 +86,9 @@ process.once('message', obj => {
     vm.runInThisContext(exp, {
       filename: /^https?:/.test(filename) ? filename : 'data-url://',
     });
-
-    const rs = fs.createReadStream(null, {fd: 3});
-    const ps = new pullstream();
-    rs.pipe(ps);
-    const _recurse = () => {
-      ps.pull(4, (err, data) => {
-        if (!err) {
-          const length = (() => {
-            if ((data.byteOffset % Uint32Array.BYTES_PER_ELEMENT) === 0) {
-              return new Uint32Array(data.buffer, data.byteOffset, 1)[0];
-            } else {
-              const arrayBuffer = new ArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
-              new Buffer(arrayBuffer).set(new Buffer(data.buffer, data.byteOffset, Uint32Array.BYTES_PER_ELEMENT));
-              return new Uint32Array(arrayBuffer)[0];
-            }
-          })();
-          ps.pull(length, (err, data) => {
-            if (!err) {
-              global.onmessage && global.onmessage(new MessageEvent(smiggles.deserialize(data)));
-
-              _recurse();
-            } else {
-              // console.warn(err);
-
-              // _recurse();
-            }
-          });
-        } else {
-          // console.warn(err);
-
-          // _recurse();
-        }
-      });
-    };
-    _recurse();
   })()
     .catch(err => {
       console.warn(err.stack);
       process.exit(1);
     });
-});
+};
