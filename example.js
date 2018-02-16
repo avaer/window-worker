@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const Worker = require('.');
 
-const worker = new Worker('data:application/javascript;base64,' + fs.readFileSync('example-worker.js', 'base64'), {
+const worker = new Worker(`http://192.168.0.13:8000/archae/plugins/generator/build/worker.js`, {
   baseUrl: 'https://unpkg.com/window-worker/',
   bindingsModule: path.join(__dirname, 'example-bindings.js'),
 });
@@ -11,6 +11,11 @@ worker.onmessage = msg => {
   console.log('got message', msg.data);
 
   if (++numMessages === 2) {
-    worker.terminate();
+    // worker.terminate();
   }
 };
+
+process.on('SIGINT', () => {
+  console.log('sigint master');
+  process.exit();
+});

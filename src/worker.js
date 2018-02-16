@@ -7,6 +7,8 @@ const fetch = require('window-fetch');
 const {XMLHttpRequest} = require('xmlhttprequest');
 const WebSocket = require('ws/lib/websocket');
 
+http = require('http');
+
 const MessageEvent = require('./message-event');
 
 onmessage = initMessage => {
@@ -15,8 +17,10 @@ onmessage = initMessage => {
   (async () => {
     const _normalizeUrl = src => new URL(src, initMessage.baseUrl).href;
     function getScript(s) {
+      console.log('fetch 1');
       return fetch(s)
         .then(res => {
+          console.log('fetch 2');
           if (res.status >= 200 && res.status < 300) {
             return res.text();
           } else {
@@ -27,7 +31,11 @@ onmessage = initMessage => {
 
     const filename = _normalizeUrl(initMessage.src);
 
+    console.log('get script 1', filename);
+    
     const exp = await getScript(filename);
+    
+    console.log('get script 2');
 
     const importScriptPaths = (() => {
       const result = [];
@@ -92,3 +100,8 @@ onmessage = initMessage => {
       process.exit(1);
     });
 };
+
+process.on('SIGINT', () => {
+  console.log('sigint worker');
+  process.exit();
+});
