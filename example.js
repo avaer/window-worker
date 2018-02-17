@@ -8,7 +8,7 @@ const worker = new Worker('data:application/javascript;base64,' + fs.readFileSyn
 });
 let numMessages = 0;
 const _pend = () => {
-  if (++numMessages === 3) {
+  if (++numMessages === 4) {
     worker.terminate();
   }
 };

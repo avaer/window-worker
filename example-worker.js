@@ -13,4 +13,8 @@ postMessage({
   array,
 }, [array.buffer]);
 
+setTimeout(() => {
+  throw new Error('fail 2');
+});
+
 throw new Error('fail 1');
