@@ -97,7 +97,6 @@ onmessage = initMessage => {
       filename: /^https?:/.test(filename) ? filename : 'data-url://',
     });
 
-    console.log('flush message queue', messageQueue.length, onmessage && onmessage.toString());
     if (messageQueue.length > 0) {
       if (onmessage !== null) {
         for (let i = 0; i < messageQueue.length; i++) {
