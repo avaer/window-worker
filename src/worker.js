@@ -61,11 +61,9 @@ onmessage = initMessage => {
 
         if (importScriptSource !== undefined) {
           const filename = _normalizeUrl(importScriptPath);
-          console.log('pre run');
           vm.runInThisContext(importScriptSource, {
             filename: /^https?:/.test(filename) ? filename : 'data-url://',
           });
-          console.log('post run');
         } else {
           throw new Error('importScripts: script not found: ' + JSON.stringify(importScriptPath) + ', ' + JSON.stringify(Object.keys(importScriptSources)));
         }
