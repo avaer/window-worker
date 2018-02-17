@@ -7,8 +7,6 @@ const fetch = require('window-fetch');
 const {XMLHttpRequest} = require('xmlhttprequest');
 const WebSocket = require('ws/lib/websocket');
 
-const MessageEvent = require('./message-event');
-
 const _handleError = err => {
   postMessage({
     _workerError: true,
@@ -18,10 +16,13 @@ const _handleError = err => {
 };
 
 onmessage = initMessage => {
-  onmessage = null;
+  const messageQueue = [];
+  onmessage = m => {
+    messageQueue.push(m);
+  };
 
   (async () => {
-    const _normalizeUrl = src => new URL(src, initMessage.baseUrl).href;
+    const _normalizeUrl = src => new URL(src, initMessage.data.baseUrl).href;
     function getScript(s) {
       return fetch(s)
         .then(res => {
@@ -33,7 +34,7 @@ onmessage = initMessage => {
         });
     }
 
-    const filename = _normalizeUrl(initMessage.src);
+    const filename = _normalizeUrl(initMessage.data.src);
 
     const exp = await getScript(filename);
 
@@ -84,16 +85,28 @@ onmessage = initMessage => {
     global.XMLHttpRequest = XMLHttpRequest;
     global.WebSocket = WebSocket;
     global.importScripts = importScripts;
-    if (initMessage.bindingsModule) {
-      const bindings = require(initMessage.bindingsModule);
+    if (initMessage.data.bindingsModule) {
+      const bindings = require(initMessage.data.bindingsModule);
       for (const k in bindings) {
         global[k] = bindings[k];
       }
     }
 
+    onmessage = null;
     vm.runInThisContext(exp, {
       filename: /^https?:/.test(filename) ? filename : 'data-url://',
     });
+
+    console.log('flush message queue', messageQueue.length, onmessage && onmessage.toString());
+    if (messageQueue.length > 0) {
+      if (onmessage !== null) {
+        for (let i = 0; i < messageQueue.length; i++) {
+          console.log('flush message', Object.keys(messageQueue[i]));
+          onmessage(messageQueue[i]);
+        }
+      }
+      messageQueue.length = 0;
+    }
   })()
     .catch(_handleError);
 };

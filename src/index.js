@@ -2,7 +2,6 @@ const path = require('path');
 const childProcessThread = require('child-process-thread');
 
 const workerPath = path.join(__dirname, 'worker.js');
-const MessageEvent = require('./message-event');
 
 class Worker {
 	constructor(src, options = {}) {
@@ -18,9 +17,9 @@ class Worker {
       bindingsModule,
     });
     this.child.onmessage = m => {
-      if (m && m._workerError) {
-        const err = new Error(m.message);
-        err.stack = m.stack;
+      if (m.data && m.data._workerError) {
+        const err = new Error(m.data.message);
+        err.stack = m.data.stack;
         
         if (this.onerror) {
           this.onerror(err);
@@ -29,7 +28,7 @@ class Worker {
         }
       } else {
         if (this.onmessage) {
-          this.onmessage(new MessageEvent(m));
+          this.onmessage(m);
         }
       }
     };
