@@ -89,6 +89,6 @@ onmessage = initMessage => {
   })()
     .catch(err => {
       console.warn(err.stack);
-      process.exit(1);
+      // process.exit(1);
     });
 };
