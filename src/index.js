@@ -18,8 +18,19 @@ class Worker {
       bindingsModule,
     });
     this.child.onmessage = m => {
-      if (this.onmessage) {
-        this.onmessage(new MessageEvent(m));
+      if (m && m._workerError) {
+        const err = new Error(m.message);
+        err.stack = m.stack;
+        
+        if (this.onerror) {
+          this.onerror(err);
+        } else {
+          throw err;
+        }
+      } else {
+        if (this.onmessage) {
+          this.onmessage(new MessageEvent(m));
+        }
       }
     };
     this.child.onerror = err => {

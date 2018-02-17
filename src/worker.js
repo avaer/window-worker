@@ -9,6 +9,14 @@ const WebSocket = require('ws/lib/websocket');
 
 const MessageEvent = require('./message-event');
 
+const _handleError = err => {
+  postMessage({
+    _workerError: true,
+    message: err.message,
+    error: err.stack,
+  });
+};
+
 onmessage = initMessage => {
   onmessage = null;
 
@@ -53,9 +61,11 @@ onmessage = initMessage => {
 
         if (importScriptSource !== undefined) {
           const filename = _normalizeUrl(importScriptPath);
+          console.log('pre run');
           vm.runInThisContext(importScriptSource, {
             filename: /^https?:/.test(filename) ? filename : 'data-url://',
           });
+          console.log('post run');
         } else {
           throw new Error('importScripts: script not found: ' + JSON.stringify(importScriptPath) + ', ' + JSON.stringify(Object.keys(importScriptSources)));
         }
@@ -87,8 +97,8 @@ onmessage = initMessage => {
       filename: /^https?:/.test(filename) ? filename : 'data-url://',
     });
   })()
-    .catch(err => {
-      console.warn(err.stack);
-      // process.exit(1);
-    });
+    .catch(_handleError);
 };
+
+process.on('uncaughtException', _handleError);
+process.on('unhandledRejection', _handleError);
