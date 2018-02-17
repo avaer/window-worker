@@ -3,39 +3,45 @@ const fs = require('fs');
 const url = require('url');
 const {URL} = url;
 const vm = require('vm');
+
+/* const NanoPromise = require('nano-promise');
+global.Promise = NanoPromise;
+
+const stream = require('stream');
+stream.Readable.prototype.resume = (resume => function() {
+  console.log('resume', new Error().stack);
+  return resume.apply(this, arguments);
+})(stream.Readable.prototype.resume); */
+
 const fetch = require('window-fetch');
 const {XMLHttpRequest} = require('xmlhttprequest');
 const WebSocket = require('ws/lib/websocket');
+const MessageEvent = require('./message-event');
 
 http = require('http');
 
-const MessageEvent = require('./message-event');
-
 onmessage = initMessage => {
   onmessage = null;
+  
+  function getScript(s) {
+    console.log('fetch 1');
+    return fetch(s)
+      .then(res => {
+        console.log('fetch 2');
+        if (res.status >= 200 && res.status < 300) {
+          return res.text();
+        } else {
+          return Promise.reject(new Error('fetch returned invalid status code: ' + JSON.stringify(s) + ' : ' + res.status));
+        }
+      });
+  }
 
   (async () => {
     const _normalizeUrl = src => new URL(src, initMessage.baseUrl).href;
-    function getScript(s) {
-      console.log('fetch 1');
-      return fetch(s)
-        .then(res => {
-          console.log('fetch 2');
-          if (res.status >= 200 && res.status < 300) {
-            return res.text();
-          } else {
-            return Promise.reject(new Error('fetch returned invalid status code: ' + JSON.stringify(s) + ' : ' + res.status));
-          }
-        });
-    }
 
     const filename = _normalizeUrl(initMessage.src);
-
-    console.log('get script 1', filename);
     
     const exp = await getScript(filename);
-    
-    console.log('get script 2');
 
     const importScriptPaths = (() => {
       const result = [];
@@ -97,11 +103,16 @@ onmessage = initMessage => {
   })()
     .catch(err => {
       console.warn(err.stack);
-      process.exit(1);
+      // process.exit(1);
     });
 };
 
-process.on('SIGINT', () => {
+// setTimeout(() => {},10);
+/* setTimeout(() => {
+  console.log('worker');
+}, 2000); */
+
+/* process.on('SIGINT', () => {
   console.log('sigint worker');
   process.exit();
-});
+}); */
