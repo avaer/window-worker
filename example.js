@@ -7,10 +7,18 @@ const worker = new Worker('data:application/javascript;base64,' + fs.readFileSyn
   bindingsModule: path.join(__dirname, 'example-bindings.js'),
 });
 let numMessages = 0;
+const _pend = () => {
+  if (++numMessages === 3) {
+    worker.terminate();
+  }
+};
 worker.onmessage = msg => {
   console.log('got message', msg.data);
 
-  if (++numMessages === 2) {
-    worker.terminate();
-  }
+  _pend();
+};
+worker.onerror = err => {
+  console.log('got error', err);
+  
+  _pend();
 };

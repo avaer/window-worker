@@ -12,3 +12,5 @@ const array = Float32Array.from([1, 2, 3, 4]);
 postMessage({
   array,
 }, [array.buffer]);
+
+throw new Error('fail 1');
