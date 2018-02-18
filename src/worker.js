@@ -85,12 +85,6 @@ onmessage = initMessage => {
     global.XMLHttpRequest = XMLHttpRequest;
     global.WebSocket = WebSocket;
     global.importScripts = importScripts;
-    if (initMessage.data.bindingsModule) {
-      const bindings = require(initMessage.data.bindingsModule);
-      for (const k in bindings) {
-        global[k] = bindings[k];
-      }
-    }
 
     onmessage = null;
     vm.runInThisContext(exp, {

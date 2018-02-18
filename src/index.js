@@ -5,7 +5,7 @@ const workerPath = path.join(__dirname, 'worker.js');
 
 class Worker {
 	constructor(src, options = {}) {
-    const {baseUrl = 'http://127.0.0.1/', bindingsModule = null} = options;
+    const {baseUrl = 'http://127.0.0.1/'} = options;
 
     this.onmessage = null;
 		this.onerror = null;
@@ -14,7 +14,6 @@ class Worker {
 		this.child.postMessage({
       src,
       baseUrl,
-      bindingsModule,
     });
     this.child.onmessage = m => {
       if (m.data && m.data._workerError) {
@@ -51,6 +50,6 @@ class Worker {
     this.child.terminate();
 	}
 }
-Worker.bind = bindings => childProcessThread.bind(bindings);
+Worker.setNativeRequire = childProcessThread.setNativeRequire;
 
 module.exports = Worker;
