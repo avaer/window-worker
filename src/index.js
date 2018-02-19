@@ -52,5 +52,6 @@ class Worker {
 	}
 }
 Worker.setNativeRequire = childProcessThread.setNativeRequire;
+Worker.bind = childProcessThread.bind;
 
 module.exports = Worker;
