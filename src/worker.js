@@ -16,12 +16,16 @@ const _handleError = err => {
 };
 
 onmessage = initMessage => {
-  const messageQueue = [];
-  onmessage = m => {
-    messageQueue.push(m);
-  };
-
   (async () => {
+    const messageQueue = [];
+    onmessage = m => {
+      messageQueue.push(m);
+    };
+
+    if (initMessage.data.startScript) {
+      eval(initMessage.data.startScript);
+    }
+    
     const _normalizeUrl = src => new URL(src, initMessage.data.baseUrl).href;
     function getScript(s) {
       return fetch(s)

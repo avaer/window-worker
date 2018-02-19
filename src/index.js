@@ -5,7 +5,7 @@ const workerPath = path.join(__dirname, 'worker.js');
 
 class Worker {
 	constructor(src, options = {}) {
-    const {baseUrl = 'http://127.0.0.1/'} = options;
+    const {baseUrl = 'http://127.0.0.1/', startScript = null} = options;
 
     this.onmessage = null;
 		this.onerror = null;
@@ -14,6 +14,7 @@ class Worker {
 		this.child.postMessage({
       src,
       baseUrl,
+      startScript,
     });
     this.child.onmessage = m => {
       if (m.data && m.data._workerError) {
