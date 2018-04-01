@@ -50,7 +50,7 @@ onmessage = initMessage => {
         let err;
         getScript(filename)
           .then(importScriptSource => {
-            vm.runInThisContext(importScriptSource, {
+            vm.runInContext(importScriptSource, self, {
               filename: /^https?:/.test(filename) ? filename : 'data-url://',
             });
           })
@@ -70,23 +70,42 @@ onmessage = initMessage => {
       }
     }
 
-    global.self = global;
-    global.onerror = err => {
-      process.send(JSON.stringify({error: err.message, stack: err.stack}));
+    const self = {
+      console,
+      get onmessage() {
+        return global.onmessage;
+      },
+      set onmessage(onmessage) {
+        global.onmessage = onmessage;
+      },
+      get onerror() {
+        return global.onerror;
+      },
+      set onerror(onerror) {
+        global.onerror = onerror;
+      },
+      addEventListener(event, fn) {
+        if (/^(?:error|message)$/.test(event)) {
+          global['on' + event] = fn;
+        }
+      },
+      location: url.parse(filename),
+      fetch(s, options) {
+        return fetch(_normalizeUrl(s), options);
+      },
+      XMLHttpRequest,
+      WebSocket,
+      importScripts,
+      postMessage,
     };
-    global.addEventListener = (event, fn) => {
-      if (/^(?:error|message)$/.test(event)) {
-        global['on' + event] = fn;
-      }
-    };
-    global.location = url.parse(filename);
-    global.fetch = (s, options) => fetch(_normalizeUrl(s), options);
-    global.XMLHttpRequest = XMLHttpRequest;
-    global.WebSocket = WebSocket;
-    global.importScripts = importScripts;
+    self.self = self;
+    vm.createContext(self);
 
     onmessage = null;
-    vm.runInThisContext(exp, {
+    onerror = err => {
+      process.send(JSON.stringify({error: err.message, stack: err.stack}));
+    };
+    vm.runInContext(exp, self, {
       filename: /^https?:/.test(filename) ? filename : 'data-url://',
     });
 
