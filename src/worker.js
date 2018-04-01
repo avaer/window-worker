@@ -41,35 +41,31 @@ onmessage = initMessage => {
     const filename = _normalizeUrl(initMessage.data.src);
     const exp = await getScript(filename);
 
-    const importScriptPaths = (() => {
-      const result = [];
-      const regexp = /^importScripts\s*\((?:'(.+)'|"(.+)"|`(.+)`)\).*$/gm;
-      let match;
-      while (match = regexp.exec(exp)) {
-        result.push(match[1] || match[2] || match[3]);
-      }
-      return result;
-    })();
-    const importScriptSources = {};
-    await Promise.all(importScriptPaths.map(importScriptPath => {
-      return getScript(_normalizeUrl(importScriptPath))
-        .then(importScriptSource => {
-          importScriptSources[importScriptPath] = importScriptSource;
-        });
-    }));
-
     function importScripts() {
       for (let i = 0; i < arguments.length; i++) {
         const importScriptPath = arguments[i];
-        const importScriptSource = importScriptSources[importScriptPath];
+        const filename = _normalizeUrl(importScriptPath);
 
-        if (importScriptSource !== undefined) {
-          const filename = _normalizeUrl(importScriptPath);
-          vm.runInThisContext(importScriptSource, {
-            filename: /^https?:/.test(filename) ? filename : 'data-url://',
+        let done = false;
+        let err;
+        getScript(filename)
+          .then(importScriptSource => {
+            vm.runInThisContext(importScriptSource, {
+              filename: /^https?:/.test(filename) ? filename : 'data-url://',
+            });
+          })
+          .then(() => {
+            done = true;
+          })
+          .catch(e => {
+            err = e;
           });
-        } else {
-          throw new Error('importScripts: script not found: ' + JSON.stringify(importScriptPath) + ', ' + JSON.stringify(Object.keys(importScriptSources)));
+          
+        while (!done) {
+          tick();
+        }
+        if (err) {
+          throw err;
         }
       }
     }
