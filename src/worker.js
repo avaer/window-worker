@@ -93,7 +93,6 @@ onmessage = initMessage => {
     if (messageQueue.length > 0) {
       if (onmessage !== null) {
         for (let i = 0; i < messageQueue.length; i++) {
-          console.log('flush message', Object.keys(messageQueue[i]));
           onmessage(messageQueue[i]);
         }
       }
