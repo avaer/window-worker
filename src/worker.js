@@ -25,7 +25,7 @@ onmessage = initMessage => {
     if (initMessage.data.startScript) {
       eval(initMessage.data.startScript);
     }
-    
+
     const _normalizeUrl = src => new URL(src, initMessage.data.baseUrl).href;
     function getScript(s) {
       return fetch(s)
@@ -39,7 +39,6 @@ onmessage = initMessage => {
     }
 
     const filename = _normalizeUrl(initMessage.data.src);
-
     const exp = await getScript(filename);
 
     const importScriptPaths = (() => {
