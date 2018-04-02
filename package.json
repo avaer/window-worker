@@ -1,6 +1,6 @@
 {
   "name": "window-worker",
-  "version": "0.0.52",
+  "version": "0.0.53",
   "description": "Web Worker for node using async http fetch",
   "main": "src/index.js",
   "repository": {
