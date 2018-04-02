@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const url = require('url');
 const {URL} = url;
+const child_process = require('child_process');
 const vm = require('vm');
 const fetch = require('window-fetch');
 const {XMLHttpRequest} = require('xmlhttprequest');
@@ -27,46 +28,32 @@ onmessage = initMessage => {
     }
 
     const _normalizeUrl = src => new URL(src, initMessage.data.baseUrl).href;
-    function getScript(s) {
-      return fetch(s)
-        .then(res => {
-          if (res.status >= 200 && res.status < 300) {
-            return res.text();
-          } else {
-            return Promise.reject(new Error('fetch returned invalid status code: ' + JSON.stringify(s) + ' : ' + res.status));
-          }
-        });
+    function getScript(url) {
+      const result = child_process.spawnSync(process.argv[0], [
+        path.join(__dirname, 'request.js'),
+        url,
+      ], {
+        encoding: 'utf8',
+      });
+      if (result.status === 0) {
+        return result.stdout;
+      } else {
+        throw new Error('fetch failed: ' + process.stderr);
+      }
     }
 
     const filename = _normalizeUrl(initMessage.data.src);
-    const exp = await getScript(filename);
+    const exp = getScript(filename);
 
     function importScripts() {
       for (let i = 0; i < arguments.length; i++) {
         const importScriptPath = arguments[i];
         const filename = _normalizeUrl(importScriptPath);
 
-        let done = false;
-        let err;
-        getScript(filename)
-          .then(importScriptSource => {
-            vm.runInContext(importScriptSource, self, {
-              filename: /^https?:/.test(filename) ? filename : 'data-url://',
-            });
-          })
-          .then(() => {
-            done = true;
-          })
-          .catch(e => {
-            err = e;
-          });
-          
-        while (!done) {
-          tick();
-        }
-        if (err) {
-          throw err;
-        }
+        const importScriptSource = getScript(filename);
+        vm.runInContext(importScriptSource, self, {
+          filename: /^https?:/.test(filename) ? filename : 'data-url://',
+        });
       }
     }
 
