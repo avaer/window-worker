@@ -59,6 +59,8 @@ onmessage = initMessage => {
 
     const self = {
       console,
+      setTimeout,
+      setInterval,
       get onmessage() {
         return global.onmessage;
       },
