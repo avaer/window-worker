@@ -34,6 +34,7 @@ onmessage = initMessage => {
         url,
       ], {
         encoding: 'utf8',
+        maxBuffer: 5 * 1024 * 1024,
       });
       if (result.status === 0) {
         return result.stdout;
