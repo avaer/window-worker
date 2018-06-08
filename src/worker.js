@@ -39,7 +39,7 @@ onmessage = initMessage => {
       if (result.status === 0) {
         return result.stdout;
       } else {
-        throw new Error('fetch failed: ' + process.stderr);
+        throw new Error(`fetch ${url} failed: ${result.stderr}`);
       }
     }
 
