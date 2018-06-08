@@ -12,7 +12,7 @@ const _handleError = err => {
   postMessage({
     _workerError: true,
     message: err.message,
-    error: err.stack,
+    stack: err.stack,
   });
 };
 
