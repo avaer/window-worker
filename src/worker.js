@@ -27,7 +27,7 @@ onmessage = initMessage => {
       eval(initMessage.data.startScript);
     }
 
-    const _normalizeUrl = src => new URL(src, initMessage.data.baseUrl).href;
+    const _normalizeUrl = src => new URL(src, new URL(initMessage.data.baseUrl).origin).href;
     function getScript(url) {
       const result = child_process.spawnSync(process.argv[0], [
         path.join(__dirname, 'request.js'),
