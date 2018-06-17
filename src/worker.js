@@ -35,17 +35,26 @@ onmessage = initMessage => {
       }
     }
     function getScript(url) {
-      const result = child_process.spawnSync(process.argv[0], [
-        path.join(__dirname, 'request.js'),
-        url,
-      ], {
-        encoding: 'utf8',
-        maxBuffer: 5 * 1024 * 1024,
-      });
-      if (result.status === 0) {
-        return result.stdout;
+      const match = url.match(/^data:.+?(;base64)?,(.*)$/);
+      if (match) {
+        if (match[1]) {
+          return Buffer.from(match[2], 'base64').toString('utf8');
+        } else {
+          return match[2];
+        }
       } else {
-        throw new Error(`fetch ${url} failed: ${result.stderr}`);
+        const result = child_process.spawnSync(process.argv[0], [
+          path.join(__dirname, 'request.js'),
+          url,
+        ], {
+          encoding: 'utf8',
+          maxBuffer: 5 * 1024 * 1024,
+        });
+        if (result.status === 0) {
+          return result.stdout;
+        } else {
+          throw new Error(`fetch ${url} failed: ${result.stderr}`);
+        }
       }
     }
 
