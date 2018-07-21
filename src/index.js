@@ -37,11 +37,22 @@ class Worker {
     };
 	}
 
-	addEventListener(event, fn) {
-		if (/^(?:error|message)$/.test(event)) {
-			this['on' + event] = fn;
-		}
-	}
+  addEventListener(event, fn) {
+    if (event === 'message') {
+      this.onmessage = fn;
+    }
+    if (event === 'error') {
+      this.onerror = fn;
+    }
+  }
+  removeEventListener(event, fn) {
+    if (event === 'message' && this.onmessage === fn) {
+      this.onmessage = null;
+    }
+    if (event === 'error' && this.onerror === fn) {
+      this.onerror = null;
+    }
+  }
 
 	postMessage(m, transferList) {
     this.child.postMessage(m, transferList);
