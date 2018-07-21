@@ -27,9 +27,14 @@ onmessage = initMessage => {
       eval(initMessage.data.startScript);
     }
 
+    const baseUrl = (() => {
+      const u = new URL(initMessage.data.src);
+      u.pathname = path.dirname(u.pathname) + '/';
+      return u.href;
+    })();
     const _normalizeUrl = src => {
       if (!/^data:/.test(src)) {
-        return new URL(src, new URL(initMessage.data.baseUrl).origin).href;
+        return new URL(src, baseUrl).href;
       } else {
         return src;
       }

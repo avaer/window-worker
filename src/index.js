@@ -5,7 +5,7 @@ const workerPath = path.join(__dirname, 'worker.js');
 
 class Worker {
 	constructor(src, options = {}) {
-    const {baseUrl = 'http://127.0.0.1/', startScript = null} = options;
+    const {startScript = null} = options;
 
     this.onmessage = null;
 		this.onerror = null;
@@ -13,7 +13,6 @@ class Worker {
 		this.child = childProcessThread.fork(workerPath);
 		this.child.postMessage({
       src,
-      baseUrl,
       startScript,
     });
     this.child.onmessage = m => {
