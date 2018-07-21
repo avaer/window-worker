@@ -95,8 +95,19 @@ onmessage = initMessage => {
         global.onerror = onerror;
       },
       addEventListener(event, fn) {
-        if (/^(?:error|message)$/.test(event)) {
-          global['on' + event] = fn;
+        if (event === 'message') {
+          global.onmessage = fn;
+        }
+        if (event === 'error') {
+          global.onerror = fn;
+        }
+      },
+      removeEventListener(event, fn) {
+        if (event === 'message' && global.onmessage === fn) {
+          global.onmessage = null;
+        }
+        if (event === 'error' && global.onerror === fn) {
+          global.onerror = null;
         }
       },
       location: url.parse(filename),
