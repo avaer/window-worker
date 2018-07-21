@@ -33,7 +33,11 @@ class Worker {
       }
     };
     this.child.onerror = err => {
-      this.onerror(err);
+      if (this.onerror) {
+        this.onerror(err);
+      } else {
+        console.warn(err);
+      }
     };
 	}
 
