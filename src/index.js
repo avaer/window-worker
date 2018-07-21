@@ -12,6 +12,7 @@ class Worker {
 
 		this.child = childProcessThread.fork(workerPath);
 		this.child.postMessage({
+      argv0: process.argv0,
       src,
       startScript,
     });

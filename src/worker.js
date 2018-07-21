@@ -48,7 +48,7 @@ onmessage = initMessage => {
           return match[2];
         }
       } else {
-        const result = child_process.spawnSync(process.argv[0], [
+        const result = child_process.spawnSync(initMessage.data.argv0, [
           path.join(__dirname, 'request.js'),
           url,
         ], {
