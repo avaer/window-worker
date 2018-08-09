@@ -22,9 +22,9 @@
   },
   "homepage": "https://github.com/modulesio/window-worker",
   "dependencies": {
-    "child-process-thread": "0.0.48",
-    "ws": "^5.2.0",
-    "window-fetch": "0.0.7",
+    "child-process-thread": "0.0.49",
+    "ws": "^6.0.0",
+    "window-fetch": "0.0.9",
     "xmlhttprequest": "^1.8.0"
   }
 }
