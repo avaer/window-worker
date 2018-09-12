@@ -2,8 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const url = require('url');
 const {URL} = url;
-const child_process = require('child_process');
 const vm = require('vm');
+const childProcessThread = require('child-process-thread');
 const fetch = require('window-fetch');
 const {XMLHttpRequest} = require('xmlhttprequest');
 const WebSocket = require('ws/lib/websocket');
@@ -48,7 +48,7 @@ onmessage = initMessage => {
           return match[2];
         }
       } else {
-        const result = child_process.spawnSync(initMessage.data.argv0, [
+        const result = childProcessThread.spawnSync(initMessage.data.argv0, [
           path.join(__dirname, 'request.js'),
           url,
         ], {
