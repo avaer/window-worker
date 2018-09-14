@@ -52,17 +52,26 @@ onmessage = initMessage => {
           return match[2];
         }
       } else {
-        const result = childProcessThread.spawnSync(initMessage.data.argv0, [
-          path.join(__dirname, 'request.js'),
-          url,
-        ], {
-          encoding: 'utf8',
-          maxBuffer: 5 * 1024 * 1024,
+        let result, err = null;
+        childProcessThread.await(async cb => {
+          try {
+            const res = await fetch(url);
+            if (res.status >= 200 && res.status < 300) {
+              result = await res.text();
+            } else {
+              throw new Error('request got invalid status code: ' + res.status);
+            }
+          } catch(e) {
+            err = e;
+          }
+
+          cb();
         });
-        if (result.status === 0) {
-          return result.stdout;
+
+        if (!err) {
+          return result;
         } else {
-          throw new Error(`fetch ${url} failed: ${result.stderr}`);
+          throw new Error(`fetch ${url} failed: ${err.stack}`);
         }
       }
     }
