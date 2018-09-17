@@ -42,7 +42,7 @@ onmessage = initMessage => {
       } else {
         return src;
       }
-    }
+    };
     function getScript(url) {
       const match = url.match(/^data:.+?(;base64)?,(.*)$/);
       if (match) {
