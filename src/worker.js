@@ -28,7 +28,7 @@ onmessage = initMessage => {
     }
 
     const baseUrl = (src => {
-      if (!/^data:/.test(src)) {
+      if (/^https?:/.test(src)) {
         const u = new URL(src);
         u.pathname = path.dirname(u.pathname) + '/';
         return u.href;
@@ -37,7 +37,7 @@ onmessage = initMessage => {
       }
     })(initMessage.data.src);
     const _normalizeUrl = src => {
-      if (!/^data:/.test(src)) {
+      if (/^https?:/.test(src)) {
         return new URL(src, baseUrl).href;
       } else {
         return src;
