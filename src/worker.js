@@ -52,8 +52,9 @@ onmessage = initMessage => {
           return match[2];
         }
       } else {
+        let loaded = false;
         let result, err = null;
-        childProcessThread.await(async cb => {
+        (async () => {
           try {
             const res = await fetch(url);
             if (res.status >= 200 && res.status < 300) {
@@ -65,8 +66,11 @@ onmessage = initMessage => {
             err = e;
           }
 
-          cb();
+          loaded = true;
         });
+        while (!loaded) {
+          childProcessThread.run();
+        }
 
         if (!err) {
           return result;
