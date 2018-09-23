@@ -67,7 +67,7 @@ onmessage = initMessage => {
           }
 
           loaded = true;
-        });
+        })();
         while (!loaded) {
           childProcessThread.run();
         }
