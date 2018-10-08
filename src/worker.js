@@ -98,7 +98,9 @@ onmessage = initMessage => {
     const self = {
       console,
       setTimeout,
+      clearTimeout,
       setInterval,
+      clearInterval,
       get onmessage() {
         return global.onmessage;
       },
@@ -136,6 +138,7 @@ onmessage = initMessage => {
       importScripts,
       postMessage,
       createImageBitmap,
+      FileReader
     };
     self.self = self;
     vm.createContext(self);
