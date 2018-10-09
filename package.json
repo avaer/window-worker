@@ -24,7 +24,7 @@
   "dependencies": {
     "child-process-thread": "0.0.61",
     "window-fetch": "0.0.9",
-    "window-http-sync": "0.0.8",
+    "window-http-sync": "0.0.9",
     "ws": "^6.0.0",
     "xmlhttprequest": "^1.8.0"
   }
