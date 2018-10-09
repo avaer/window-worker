@@ -11,8 +11,6 @@ const createHandler = fds => {
     const bs = [];
     let total = 0;
     const _data = d => {
-      console.log('handler data', d.length);
-
       bs.push(d);
       total += d.length;
       if (total >= 4) {

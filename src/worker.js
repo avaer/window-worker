@@ -25,8 +25,6 @@ const createRequest = (fds, cb, arg) => {
     fs.writeSync(fds[1], b);
   }
 
-  console.log('request write');
-
   const length = (() => {
     let total = 0;
     const b = Buffer.allocUnsafe(4);
@@ -40,8 +38,6 @@ const createRequest = (fds, cb, arg) => {
       }
     }
   })();
-
-  console.log('request got length', length);
   
   const b = (() => {
     const b = Buffer.allocUnsafe(length);
@@ -56,8 +52,6 @@ const createRequest = (fds, cb, arg) => {
       }
     }
   })();
-
-  console.log('request got buffer', b.length);
 
   const s = b.toString('utf8');
   const j = JSON.parse(s);
@@ -119,7 +113,6 @@ onmessage = initMessage => {
               cb({error});
             });
         }, url);
-        console.log('tock', result);
 
         if (!error) {
           return result;
