@@ -95,8 +95,6 @@ onmessage = initMessage => {
         }
       } else {
         const {error, result} = createRequest(initMessage.data.fds, (url, cb) => {
-          console.log('got url', {url});
-
           (async () => {
             const res = await fetch(url);
             if (res.ok) {
