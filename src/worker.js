@@ -7,6 +7,7 @@ const child_process = require('child_process');
 const fetch = require('window-fetch');
 const {XMLHttpRequest} = require('xmlhttprequest');
 const WebSocket = require('ws/lib/websocket');
+const windowHttpSync = require('window-http-sync');
 
 const _handleError = err => {
   postMessage({
@@ -54,17 +55,29 @@ onmessage = initMessage => {
       } else if (match = url.match(/^file:\/\/(.*)$/)) {
         return fs.readFileSync(path.resolve(process.cwd(), match[1]), 'utf8');
       } else {
-        const result = child_process.spawnSync(initMessage.data.argv0, [
-          path.join(__dirname, 'request.js'),
-          url,
-        ], {
-          encoding: 'utf8',
-          maxBuffer: 5 * 1024 * 1024,
-        });
-        if (result.status === 0) {
-          return result.stdout;
+        if (windowHttpSync) {
+          const o = URL.parse(url);
+          o.method = 'GET';
+          const req = windowHttpSync.request(o);
+          const res = req.end();
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            return res.body.toString('utf8');
+          } else {
+            throw new Error(`fetch ${url} failed: ${res.statusCode}`);
+          }
         } else {
-          throw new Error(`fetch ${url} failed: ${result.stderr}`);
+          const result = child_process.spawnSync(initMessage.data.argv0, [
+            path.join(__dirname, 'request.js'),
+            url,
+          ], {
+            encoding: 'utf8',
+            maxBuffer: 5 * 1024 * 1024,
+          });
+          if (result.status === 0) {
+            return result.stdout;
+          } else {
+            throw new Error(`fetch ${url} failed: ${result.stderr}`);
+          }
         }
       }
     }
