@@ -7,7 +7,6 @@ const child_process = require('child_process');
 const fetch = require('window-fetch');
 const {XMLHttpRequest} = require('xmlhttprequest');
 const WebSocket = require('ws/lib/websocket');
-const windowHttpSync = require('window-http-sync');
 
 const _handleError = err => {
   postMessage({
@@ -15,6 +14,54 @@ const _handleError = err => {
     message: err.message,
     stack: err.stack,
   });
+};
+
+const createRequest = (fds, cb, arg) => {
+  {
+    const b = Buffer.from(JSON.stringify({fn: cb.toString(), arg}), 'utf8');
+    const bLength = Buffer.allocUnsafe(4);
+    bLength.writeUInt32LE(b.length);
+    fs.writeSync(fds[1], bLength);
+    fs.writeSync(fds[1], b);
+  }
+
+  console.log('request write');
+
+  const length = (() => {
+    let total = 0;
+    const b = Buffer.allocUnsafe(4);
+    for (;;) {
+      const bytesRead = fs.readSync(fds[0], b, total, 4, null);
+      if (bytesRead > 0) {
+        total += bytesRead;
+      }
+      if (total >= 4) {
+        return b.readUInt32LE(0);
+      }
+    }
+  })();
+
+  console.log('request got length', length);
+  
+  const b = (() => {
+    const b = Buffer.allocUnsafe(length);
+    let total = 0;
+    for (;;) {
+      const bytesRead = fs.readSync(fds[0], b, total, length - total, null);
+      if (bytesRead > 0) {
+        total += bytesRead;
+      }
+      if (total >= length) {
+        return b
+      }
+    }
+  })();
+
+  console.log('request got buffer', b.length);
+
+  const s = b.toString('utf8');
+  const j = JSON.parse(s);
+  return j;
 };
 
 onmessage = initMessage => {
@@ -38,46 +85,46 @@ onmessage = initMessage => {
       }
     })(initMessage.data.src);
     const _normalizeUrl = src => {
-      if (/^https?:/.test(src)) {
+      if (!/^(?:data|blob):/.test(src)) {
         return new URL(src, baseUrl).href;
       } else {
         return src;
       }
     };
-    function getScript(u) {
-      let match = u.match(/^data:.+?(;base64)?,(.*)$/);
+    function getScript(url) {
+      let match = url.match(/^data:.+?(;base64)?,(.*)$/);
       if (match) {
         if (match[1]) {
           return Buffer.from(match[2], 'base64').toString('utf8');
         } else {
           return match[2];
         }
-      } else if (match = u.match(/^file:\/\/(.*)$/)) {
-        return fs.readFileSync(path.resolve(process.cwd(), match[1]), 'utf8');
       } else {
-        if (windowHttpSync) {
-          const o = url.parse(u);
-          o.method = 'GET';
-          const req = windowHttpSync.request(o);
-          const res = req.end();
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            return res.body.toString('utf8');
-          } else {
-            throw new Error(`fetch ${u} failed: ${res.statusCode}`);
-          }
+        const {error, result} = createRequest(initMessage.data.fds, (url, cb) => {
+          console.log('got url', {url});
+
+          (async () => {
+            const res = await fetch(url);
+            if (res.ok) {
+              return await res.text();
+            } else {
+              throw new Error('request got invalid status code: ' + res.status);
+            }
+          })()
+            .then(result => {
+              cb({result});
+            })
+            .catch(error => {
+              error = error.stack;
+              cb({error});
+            });
+        }, url);
+        console.log('tock', result);
+
+        if (!error) {
+          return result;
         } else {
-          const result = child_process.spawnSync(initMessage.data.argv0, [
-            path.join(__dirname, 'request.js'),
-            u,
-          ], {
-            encoding: 'utf8',
-            maxBuffer: 5 * 1024 * 1024,
-          });
-          if (result.status === 0) {
-            return result.stdout;
-          } else {
-            throw new Error(`fetch ${u} failed: ${result.stderr}`);
-          }
+          throw new Error(`fetch ${url} failed: ${error}`);
         }
       }
     }
