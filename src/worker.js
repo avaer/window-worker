@@ -44,31 +44,31 @@ onmessage = initMessage => {
         return src;
       }
     };
-    function getScript(url) {
-      let match = url.match(/^data:.+?(;base64)?,(.*)$/);
+    function getScript(u) {
+      let match = u.match(/^data:.+?(;base64)?,(.*)$/);
       if (match) {
         if (match[1]) {
           return Buffer.from(match[2], 'base64').toString('utf8');
         } else {
           return match[2];
         }
-      } else if (match = url.match(/^file:\/\/(.*)$/)) {
+      } else if (match = u.match(/^file:\/\/(.*)$/)) {
         return fs.readFileSync(path.resolve(process.cwd(), match[1]), 'utf8');
       } else {
         if (windowHttpSync) {
-          const o = URL.parse(url);
+          const o = url.parse(u);
           o.method = 'GET';
           const req = windowHttpSync.request(o);
           const res = req.end();
           if (res.statusCode >= 200 && res.statusCode < 300) {
             return res.body.toString('utf8');
           } else {
-            throw new Error(`fetch ${url} failed: ${res.statusCode}`);
+            throw new Error(`fetch ${u} failed: ${res.statusCode}`);
           }
         } else {
           const result = child_process.spawnSync(initMessage.data.argv0, [
             path.join(__dirname, 'request.js'),
-            url,
+            u,
           ], {
             encoding: 'utf8',
             maxBuffer: 5 * 1024 * 1024,
@@ -76,7 +76,7 @@ onmessage = initMessage => {
           if (result.status === 0) {
             return result.stdout;
           } else {
-            throw new Error(`fetch ${url} failed: ${result.stderr}`);
+            throw new Error(`fetch ${u} failed: ${result.stderr}`);
           }
         }
       }
