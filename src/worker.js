@@ -3,7 +3,7 @@ const fs = require('fs');
 const url = require('url');
 const {URL} = url;
 const vm = require('vm');
-const childProcessThread = requireNative('ChildProcessThread');
+const child_process = require('child_process');
 const fetch = require('window-fetch');
 const {XMLHttpRequest} = require('xmlhttprequest');
 const WebSocket = require('ws/lib/websocket');
@@ -52,30 +52,17 @@ onmessage = initMessage => {
           return match[2];
         }
       } else {
-        let loaded = false;
-        let result, err = null;
-        (async () => {
-          try {
-            const res = await fetch(url);
-            if (res.status >= 200 && res.status < 300) {
-              result = await res.text();
-            } else {
-              throw new Error('request got invalid status code: ' + res.status);
-            }
-          } catch(e) {
-            err = e;
-          }
-
-          loaded = true;
-        })();
-        while (!loaded) {
-          childProcessThread.run();
-        }
-
-        if (!err) {
-          return result;
+        const result = child_process.spawnSync(initMessage.data.argv0, [
+          path.join(__dirname, 'request.js'),
+          url,
+        ], {
+          encoding: 'utf8',
+          maxBuffer: 5 * 1024 * 1024,
+        });
+        if (result.status === 0) {
+          return result.stdout;
         } else {
-          throw new Error(`fetch ${url} failed: ${err.stack}`);
+          throw new Error(`fetch ${url} failed: ${result.stderr}`);
         }
       }
     }
