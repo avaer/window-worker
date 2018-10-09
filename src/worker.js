@@ -51,6 +51,8 @@ onmessage = initMessage => {
         } else {
           return match[2];
         }
+      } else if (match = url.match(/^file:\/\/(.*)$/)) {
+        return fs.readFileSync(path.resolve(process.cwd(), match[1]), 'utf8');
       } else {
         const result = child_process.spawnSync(initMessage.data.argv0, [
           path.join(__dirname, 'request.js'),
