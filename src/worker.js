@@ -178,6 +178,7 @@ onmessage = initMessage => {
       importScripts,
       postMessage,
       createImageBitmap,
+      FileReader,
     };
     self.self = self;
     vm.createContext(self);
