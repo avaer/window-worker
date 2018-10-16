@@ -177,7 +177,7 @@ onmessage = initMessage => {
       WebSocket,
       importScripts,
       postMessage,
-      // createImageBitmap,
+      createImageBitmap,
     };
     self.self = self;
     vm.createContext(self);
