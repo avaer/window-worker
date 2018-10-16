@@ -138,7 +138,9 @@ onmessage = initMessage => {
     const self = {
       console,
       setTimeout,
+      clearTimeout,
       setInterval,
+      clearInterval,
       get onmessage() {
         return global.onmessage;
       },
@@ -175,7 +177,8 @@ onmessage = initMessage => {
       WebSocket,
       importScripts,
       postMessage,
-      // createImageBitmap,
+      createImageBitmap,
+      FileReader,
     };
     self.self = self;
     vm.createContext(self);
