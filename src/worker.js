@@ -138,7 +138,9 @@ onmessage = initMessage => {
     const self = {
       console,
       setTimeout,
+      clearTimeout,
       setInterval,
+      clearInterval,
       get onmessage() {
         return global.onmessage;
       },
