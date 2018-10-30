@@ -94,28 +94,43 @@ onmessage = initMessage => {
           return match[2];
         }
       } else {
-        const {error, result} = createRequest(initMessage.data.fds, (url, cb) => {
-          (async () => {
-            const res = await fetch(url);
-            if (res.ok) {
-              return await res.text();
-            } else {
-              throw new Error('request got invalid status code: ' + res.status);
-            }
-          })()
-            .then(result => {
-              cb({result});
-            })
-            .catch(error => {
-              error = error.stack;
-              cb({error});
-            });
-        }, url);
+        if (initMessage.data.fds) {
+          const {error, result} = createRequest(initMessage.data.fds, (url, cb) => {
+            (async () => {
+              const res = await fetch(url);
+              if (res.ok) {
+                return await res.text();
+              } else {
+                throw new Error('request got invalid status code: ' + res.status);
+              }
+            })()
+              .then(result => {
+                cb({result});
+              })
+              .catch(error => {
+                error = error.stack;
+                cb({error});
+              });
+          }, url);
 
-        if (!error) {
-          return result;
+          if (!error) {
+            return result;
+          } else {
+            throw new Error(`fetch ${url} failed: ${error}`);
+          }
         } else {
-          throw new Error(`fetch ${url} failed: ${error}`);
+          const result = child_process.spawnSync(initMessage.data.argv0, [
+            path.join(__dirname, 'request.js'),
+            url,
+          ], {
+            encoding: 'utf8',
+            maxBuffer: 5 * 1024 * 1024,
+          });
+          if (result.status === 0) {
+            return result.stdout;
+          } else {
+            throw new Error(`fetch ${url} failed: ${result.stderr}`);
+          }
         }
       }
     }
