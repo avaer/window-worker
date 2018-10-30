@@ -86,8 +86,8 @@ onmessage = initMessage => {
       }
     };
     function getScript(url) {
-      let match = url.match(/^data:.+?(;base64)?,(.*)$/);
-      if (match) {
+      let match;
+      if (match = url.match(/^data:.+?(;base64)?,(.*)$/)) {
         if (match[1]) {
           return Buffer.from(match[2], 'base64').toString('utf8');
         } else {
