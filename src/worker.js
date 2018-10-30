@@ -80,7 +80,12 @@ onmessage = initMessage => {
     })(initMessage.data.src);
     const _normalizeUrl = src => {
       if (!/^(?:data|blob):/.test(src)) {
-        return new URL(src, baseUrl).href;
+        const match = baseUrl.match(/^(file:\/\/)(.*)$/);
+        if (match) {
+          return match[1] + path.join(match[2], src);
+        } else {
+          return new URL(src, baseUrl).href;
+        }
       } else {
         return src;
       }
