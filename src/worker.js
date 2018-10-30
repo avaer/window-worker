@@ -93,6 +93,8 @@ onmessage = initMessage => {
         } else {
           return match[2];
         }
+      } else if (match = url.match(/^file:\/\/(.*)$/)) {
+        return fs.readFileSync(match[1], 'utf8');
       } else {
         if (initMessage.data.fds) {
           const {error, result} = createRequest(initMessage.data.fds, (url, cb) => {
