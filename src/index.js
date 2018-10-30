@@ -84,8 +84,8 @@ class Worker {
       fds = null;
     }
 
-		this.child = childProcessThread.fork(workerPath);
-		this.child.postMessage({
+    this.child = childProcessThread.fork(workerPath);
+    this.child.postMessage({
       argv0: process.argv0,
       src,
       startScript,
