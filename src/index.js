@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const fetch = require('window-fetch');
 const childProcessThread = require('child-process-thread');
 
@@ -73,7 +74,7 @@ class Worker {
 		this.onerror = null;
 
     let fds;
-    if (platform.os() !== 'win32') {
+    if (os.platform() !== 'win32') {
       fds = {
         in: childProcessThread.pipe(),
         out: childProcessThread.pipe(),
