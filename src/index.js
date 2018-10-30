@@ -72,17 +72,24 @@ class Worker {
     this.onmessage = null;
 		this.onerror = null;
 
-    const inFds = childProcessThread.pipe();
-    const outFds = childProcessThread.pipe();
+    let fds;
+    if (platform.os() !== 'win32') {
+      fds = {
+        in: childProcessThread.pipe(),
+        out: childProcessThread.pipe(),
+      };
 
-    createHandler([inFds[0], outFds[1]]);
+      createHandler([fds.in[0], fds.out[1]]);
+    } else {
+      fds = null;
+    }
 
 		this.child = childProcessThread.fork(workerPath);
 		this.child.postMessage({
       argv0: process.argv0,
       src,
       startScript,
-      fds: [outFds[0], inFds[1]],
+      fds: fds && [fds.out[0], fds.in[1]],
     });
     this.child.onmessage = m => {
       if (m.data && m.data._workerError) {
