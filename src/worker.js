@@ -75,7 +75,7 @@ onmessage = initMessage => {
         u.pathname = path.dirname(u.pathname) + '/';
         return u.href;
       } else {
-        return 'file://' + __dirname;
+        return 'file://' + process.cwd();
       }
     })(initMessage.data.src);
     const _normalizeUrl = src => {
