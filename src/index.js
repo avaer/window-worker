@@ -134,11 +134,11 @@ class Worker {
   }
 
 	postMessage(m, transferList) {
-    this.child.postMessage(m, transferList);
+    this.worker.postMessage(m, transferList);
 	}
 
 	terminate() {
-    this.child.terminate();
+    this.worker.terminate();
 	}
 }
 // Worker.setNativeRequire = childProcessThread.setNativeRequire;
