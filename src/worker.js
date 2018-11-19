@@ -9,47 +9,19 @@ const {XMLHttpRequest} = require('xmlhttprequest');
 const WebSocket = require('ws/lib/websocket');
 const {Worker, parentPort, workerData} = require('worker_threads');
 
-/* const createRequest = (fds, cb, arg) => {
-  {
-    const b = Buffer.from(JSON.stringify({fn: cb.toString(), arg}), 'utf8');
-    const bLength = Buffer.allocUnsafe(4);
-    bLength.writeUInt32LE(b.length);
-    fs.writeSync(fds[1], bLength);
-    fs.writeSync(fds[1], b);
-  }
+function postMessage() {
+  return parentPort.postMessage.apply(parentPort, arguments);
+}
 
-  const length = (() => {
-    let total = 0;
-    const b = Buffer.allocUnsafe(4);
-    for (;;) {
-      const bytesRead = fs.readSync(fds[0], b, total, 4, null);
-      if (bytesRead > 0) {
-        total += bytesRead;
-      }
-      if (total >= 4) {
-        return b.readUInt32LE(0);
-      }
-    }
-  })();
-  
-  const b = (() => {
-    const b = Buffer.allocUnsafe(length);
-    let total = 0;
-    for (;;) {
-      const bytesRead = fs.readSync(fds[0], b, total, length - total, null);
-      if (bytesRead > 0) {
-        total += bytesRead;
-      }
-      if (total >= length) {
-        return b
-      }
-    }
-  })();
-
-  const s = b.toString('utf8');
-  const j = JSON.parse(s);
-  return j;
-}; */
+const _handleError = err => {
+  postMessage({
+    _workerError: true,
+    message: err.message,
+    stack: err.stack,
+  });
+};
+process.on('uncaughtException', _handleError);
+process.on('unhandledRejection', _handleError);
 
 const initMessage = { // XXX
   data: workerData,
@@ -98,13 +70,14 @@ function getScript(url) {
         int32Array,
       },
     });
-    const status = Atomics.wait(int32Array, 0, 0);
-    const length = new Uint32Arrayh(sab, Int32Array.BYTES_PER_ELEMENT, 1)[0];
-    const result = new Buffer(sab, Int32Array.BYTES_PER_ELEMENT*2, length).toString('utf8');
-    if (status === 0) {
+    Atomics.wait(int32Array, 0, 0);
+    const status = new Uint32Array(sab, 0, 1)[0];
+    const length = new Uint32Array(sab, Int32Array.BYTES_PER_ELEMENT, 1)[0];
+    const result = Buffer.from(sab, Int32Array.BYTES_PER_ELEMENT*2, length).toString('utf8');
+    if (status === 1) {
       return result;
     } else {
-      throw new Error(`fetch ${url} failed: ${result}`);
+      throw new Error(`fetch ${url} failed (${JSON.stringify(status)}): ${result}`);
     }
   }
 }
@@ -165,9 +138,7 @@ const self = {
   XMLHttpRequest,
   WebSocket,
   importScripts,
-  postMessage: function() {
-    return parentPort.postMessage.apply(parentPort, arguments);
-  },
+  postMessage,
   createImageBitmap,
   FileReader,
 };
@@ -181,13 +152,3 @@ onerror = err => {
 vm.runInContext(exp, self, {
   filename: /^https?:/.test(filename) ? filename : 'data-url://',
 });
-
-const _handleError = err => {
-  postMessage({
-    _workerError: true,
-    message: err.message,
-    stack: err.stack,
-  });
-};
-process.on('uncaughtException', _handleError);
-process.on('unhandledRejection', _handleError);

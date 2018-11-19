@@ -16,17 +16,18 @@ const resultArray = new Uint8Array(sab, Int32Array.BYTES_PER_ELEMENT*2);
 })()
   .then(result => {
     const s = result + '';
-    const b = new Buffer(s, 'utf8');
+    const b = Buffer.from(s, 'utf8');
     lengthArray[0] = b.byteLength;
     resultArray.set(b);
+    Atomics.store(int32Array, 0, 1);
   })
   .catch(err => {
     const s = err.stack || (err + '');
-    const b = new Buffer(s, 'utf8');
+    const b = Buffer.from(s, 'utf8');
     lengthArray[0] = b.byteLength;
     resultArray.set(b);
+    Atomics.store(int32Array, 0, 2);
   })
   .finally(() => {
-    Atomics.store(sab, 0, 1);
-    Atomics.notify(sab, 0);
+    Atomics.notify(int32Array, 0);
   });

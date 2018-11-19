@@ -92,9 +92,9 @@ class Worker {
       },
     });
     this.worker.on('message', m => {
-      if (m.data && m.data._workerError) {
-        const err = new Error(m.data.message);
-        err.stack = m.data.stack;
+      if (m && m._workerError) {
+        const err = new Error(m.message);
+        err.stack = m.stack;
         
         if (this.onerror) {
           this.onerror(err);
