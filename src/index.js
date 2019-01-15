@@ -2,9 +2,11 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const fetch = require('window-fetch');
-const worker_threads = require('worker_threads');
+const childProcessThread = require('child-process-thread');
 
-/* const createHandler = fds => {
+const workerPath = path.join(__dirname, 'worker.js');
+
+const createHandler = fds => {
   const rs = fs.createReadStream(null, {fd: fds[0]});
   const _read1 = () => {
     const bs = [];
@@ -62,7 +64,7 @@ const worker_threads = require('worker_threads');
   };
 
   _read1();
-}; */
+};
 
 class Worker {
 	constructor(src, options = {}) {
@@ -71,7 +73,7 @@ class Worker {
     this.onmessage = null;
 		this.onerror = null;
 
-    /* let fds;
+    let fds;
     if (os.platform() !== 'win32') {
       fds = {
         in: childProcessThread.pipe(),
@@ -81,20 +83,19 @@ class Worker {
       createHandler([fds.in[0], fds.out[1]]);
     } else {
       fds = null;
-    } */
+    }
 
-    this.worker = new worker_threads.Worker(path.join(__dirname, 'worker.js'), {
-      workerData: {
-        // argv0: process.argv0,
-        src,
-        startScript,
-        // fds: fds && [fds.out[0], fds.in[1]],
-      },
+    this.child = childProcessThread.fork(workerPath);
+    this.child.postMessage({
+      argv0: process.argv0,
+      src,
+      startScript,
+      fds: fds && [fds.out[0], fds.in[1]],
     });
-    this.worker.on('message', m => {
-      if (m && m._workerError) {
-        const err = new Error(m.message);
-        err.stack = m.stack;
+    this.child.onmessage = m => {
+      if (m.data && m.data._workerError) {
+        const err = new Error(m.data.message);
+        err.stack = m.data.stack;
         
         if (this.onerror) {
           this.onerror(err);
@@ -106,14 +107,14 @@ class Worker {
           this.onmessage(m);
         }
       }
-    });
-    this.worker.on('error', err => {
+    };
+    this.child.onerror = err => {
       if (this.onerror) {
         this.onerror(err);
       } else {
         console.warn(err);
       }
-    });
+    };
 	}
 
   addEventListener(event, fn) {
@@ -134,14 +135,14 @@ class Worker {
   }
 
 	postMessage(m, transferList) {
-    this.worker.postMessage(m, transferList);
+    this.child.postMessage(m, transferList);
 	}
 
 	terminate() {
-    this.worker.terminate();
+    this.child.terminate();
 	}
 }
-// Worker.setNativeRequire = childProcessThread.setNativeRequire;
-// Worker.bind = childProcessThread.bind;
+Worker.setNativeRequire = childProcessThread.setNativeRequire;
+Worker.bind = childProcessThread.bind;
 
 module.exports = Worker;

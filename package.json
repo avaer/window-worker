@@ -1,6 +1,6 @@
 {
   "name": "window-worker",
-  "version": "0.0.99",
+  "version": "0.0.98",
   "description": "Web Worker for node using async http fetch",
   "main": "src/index.js",
   "repository": {
@@ -22,11 +22,9 @@
   },
   "homepage": "https://github.com/modulesio/window-worker",
   "dependencies": {
+    "child-process-thread": "0.0.64",
     "window-fetch": "0.0.9",
     "ws": "^6.0.0",
     "xmlhttprequest": "^1.8.0"
-  },
-  "devDependencies": {
-    "express": "^4.16.4"
   }
 }
